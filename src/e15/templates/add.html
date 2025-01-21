@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>All Entries</title>
+    <title>Create New Entry</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <div class="container">
+        <nav>
+            <a href="{{ url_for('list_entries') }}">Tutte le Camere</a> |
+            <a href="{{ url_for('list_available_entries') }}">Camere Disponibili</a> |
+            <a href="{{ url_for('list_bookings') }}">Prenotazioni</a> |
+            <a href="{{ url_for('book_room') }}">Prenota una Camera</a>
+        </nav>
         <h2>Create New Entry</h2>
         <form method="POST" action="{{ url_for('add_entries') }}">
             <p>

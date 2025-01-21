@@ -6,6 +6,12 @@
 </head>
 <body>
     <div class="container">
+        <nav>
+            <a href="{{ url_for('list_entries') }}">Tutte le Camere</a> |
+            <a href="{{ url_for('list_available_entries') }}">Camere Disponibili</a> |
+            <a href="{{ url_for('list_bookings') }}">Prenotazioni</a> |
+            <a href="{{ url_for('book_room') }}">Prenota una Camera</a>
+        </nav>
         <table>
             <thead>
                 <tr>
@@ -23,33 +29,11 @@
                         <td>{{ entry.numero_posti }}</td>
                         <td>{{ entry.prezzo }}</td>
                         <td>{{ entry.tipo }}</td>
-                        <td>{% if entry.disponibile == 1 %}Disponibile{% else %}Ocuppata{% endif %}</td>
+                        <td>{% if entry.disponibile == 1 %}Disponibile{% else %}Occupata{% endif %}</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
-        <!-- <ul>
-            <li>
-                <strong>numero</strong>
-                numero_posti
-                prezzo
-                tipo
-                disponibile
-            </li>
-        {% for entry in entries %}
-            <li>
-                <strong>{{ entry.numero }}</strong>
-                {{ entry.numero_posti }}
-                {{ entry.prezzo }}
-                {{ entry.tipo }}
-                {% if entry.disponibile == 1 %}
-                    Disponibile
-                {% else %}
-                    Ocuppata
-                {% endif %}
-            </li>
-        {% endfor %}
-        </ul>
-          -->
+    </div>
 </body>
 </html>
