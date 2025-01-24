@@ -12,6 +12,9 @@ from flask import (
 import mysql.connector
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 app.secret_key = "your-secret-key-here"  
@@ -22,7 +25,7 @@ def get_db_connection():
         host="localhost",
         user="x",
         password="x",
-        database="albergo",
+        database="delia_albergo",
     )
 
 
@@ -87,51 +90,48 @@ def list_bookings():
     bookings = cursor.fetchall()
     cursor.close()
     conn.close()
-    return render_template("list.html", bookings=bookings)
+    return render_template("bookings.html", bookings=bookings)
 
-@app.route("/bookings_raw")
-def list_bookings_raw():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM PRENOTAZIONE")
-    bookings = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return  bookings
 
 @app.route("/book", methods=("GET", "POST"))
 def book_room():
     if request.method == "POST":
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        numero = request.form["numero"]
-        cliente = request.form["cliente"]
-        data_inizio = request.form["data_inizio"]
-        data_fine = request.form["data_fine"]
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            numero = request.form["numero"]
+            cliente = request.form["cliente"]
+            data_inizio = request.form["data_inizio"]
+            data_fine = request.form["data_fine"]
 
-        
-        cursor.execute(
-            "SELECT * FROM CAMERA WHERE numero = %s AND disponibile = TRUE", (numero,)
-        )
-        room = cursor.fetchone()
-        if room:
-         
+            logging.debug(f"Numero: {numero}, Cliente: {cliente}, Data Inizio: {data_inizio}, Data Fine: {data_fine}")
+
             cursor.execute(
-                "INSERT INTO PRENOTAZIONE (numero_camera, cliente, data_inizio, data_fine) VALUES (%s, %s, %s, %s)",
-                (numero, cliente, data_inizio, data_fine),
+                "SELECT * FROM CAMERA WHERE numero = %s AND disponibile = TRUE", (numero,)
             )
-            cursor.execute(
-                "UPDATE CAMERA SET disponibile = FALSE WHERE numero = %s", (numero)
-            )
-            conn.commit()
-            flash("Camera prenotata con successo!")
-        else:
-            flash("Camera non disponibile!")
-        
-        cursor.close()
-        conn.close()
-        return redirect(url_for("list_bookings"))
+            room = cursor.fetchone()
+            logging.debug(f"Room: {room}")
+            if room:
+                cursor.execute(
+                    "INSERT INTO PRENOTAZIONE (numero_camera, nome_cliente, data_arrivo, data_partenza) VALUES (%s, %s, %s, %s)",
+                    (numero, cliente, data_inizio, data_fine),
+                )
+                cursor.execute(
+                    "UPDATE CAMERA SET disponibile = FALSE WHERE numero = %s", (numero,)
+                )
+                conn.commit()
+                flash("Camera prenotata con successo!")
+            else:
+                flash("Camera non disponibile!")
+            
+            cursor.close()
+            conn.close()
+            return redirect(url_for("list_bookings"))
+        except Exception as e:
+            logging.error(f"Error: {e}")
+            flash("Si è verificato un errore durante la prenotazione della camera.")
+            return redirect(url_for("book_room"))
     return render_template("add.html")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
